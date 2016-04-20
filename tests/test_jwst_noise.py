@@ -30,11 +30,34 @@ def test_flux_to_njy():
     flux_restframe = flux_obsframe*(1.+z)
     wavel_obs, flux_nJy = jn.flux_to_njy(wavel=wavel_restframe,
                                          flux=flux_restframe, z=z)
+    print 'test_flux_to_njy'
     print 'flux:', flux_nJy, ' nJy'
     print 'should be around 0.3995'
     print 'Luminosity distance:', c2t.luminosity_distance(z)
 
 
+def test_nirspec_bins():
+    # Test that the resolution as a function of wavelength
+    # is the same as in the data files
+    bins_R100 = jn.nirspec_bins(resolution=100)
+    dlambda = bins_R100[1:]-bins_R100[:-1]
+    bin_centers = bins_R100[1:] + dlambda/2.
+    R = bin_centers/dlambda
+
+    nirspec_data = jn.utility_functions._get_nirspec_data(resolution=100)
+    wavel_nirspec = nirspec_data[:, 0]
+    specres_nirspec = nirspec_data[:, 1]
+
+    pl.plot(bin_centers, R, label='Calculated')
+    pl.plot(wavel_nirspec*1e4, specres_nirspec, label='From file')
+    pl.xlabel('Wavelength')
+    pl.ylabel('Calculated R')
+    pl.legend(loc='best')
+    pl.title('test nirspec_bins. Curves should be similar')
+    pl.show()
+
+
 if __name__ == '__main__':
-    #test_nirspec_sensitivity()
+    test_nirspec_sensitivity()
     test_flux_to_njy()
+    test_nirspec_bins()

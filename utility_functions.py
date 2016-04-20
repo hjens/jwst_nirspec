@@ -55,7 +55,41 @@ def flux_to_njy(wavel, flux, z=7.):
 
 
 def nirspec_bins(z=None, wavel_range=None, resolution=100):
-    pass
+    """
+    Get the bin edges in A for NIRSpec for the given resolution
+    If z is given, the bins are rescaled to rest frame
+    of the object
+    If wavel_range is given, only bins inside the range
+    are included. wavel_range is in A, restframe
+
+    :param z: The redshift. If None, bins are not
+    rescaled to rest frame
+    :param wavel_range: If given, include only bins inside
+     the range. Given in A, restframe
+    :param resolution: The NIRSpec resolution, can be
+    100 or 1000
+    :return: An array with the bin edges in A
+    """
+    nirspec_data = _get_nirspec_data(resolution)
+    wavel_nirspec = nirspec_data[:, 0]
+    specres_nirspec = nirspec_data[:, 1]
+
+    dlambda = interp1d(wavel_nirspec, wavel_nirspec / specres_nirspec)
+    bins = [wavel_nirspec[0]]
+    while bins[-1] < wavel_nirspec[-1]:
+        bins.append(bins[-1] + dlambda(bins[-1]))
+
+    # Convert bins to A, and restframe if z is given
+    if z is None:
+        bins = np.array(bins) * 1.e4
+    else:
+        bins = np.array(bins) * 1.e4 / (1. + z)
+
+    # If wavel_range is given, crop bins
+    if not wavel_range is None:
+        bins = bins[(bins > wavel_range[0]) * (bins < wavel_range[1])]
+
+    return bins
 
 
 def nirspec_sensitivity(wavel_mu, resolution):
@@ -67,13 +101,7 @@ def nirspec_sensitivity(wavel_mu, resolution):
     :param resolution: The NIRSpec resolution (100 or 1000)
     :return: The minimum flux in nJy
     """
-    if resolution == 100:
-        nirspec_data = np.loadtxt(_resource_filename('nirspec_sensitivity_R100.dat'))
-    elif resolution == 1000:
-        nirspec_data = np.loadtxt(_resource_filename('nirspec_sensitivity_R1000.dat'))
-    else:
-        raise ValueError('Unsupported resolution')
-
+    nirspec_data = _get_nirspec_data(resolution)
     wavel_nirspec = nirspec_data[:, 0]
     flux_nirspec = nirspec_data[:, 2]
     f = interp1d(wavel_nirspec, flux_nirspec)
@@ -82,6 +110,22 @@ def nirspec_sensitivity(wavel_mu, resolution):
 
 def signal_to_noise(wavel, flux, t, z=7., resolution=100):
     pass
+
+
+def _get_nirspec_data(resolution):
+    """
+    Read the correct file containing sensitivity and
+    resolution
+
+    :param resolution: The NIRSpec resolution mode.
+    Can be 100 or 1000
+    :return: The data in the file
+    """
+    if resolution != 100 and resolution != 1000:
+        raise ValueError('Unsupported resolution: %d' % resolution)
+    nirspec_data = np.loadtxt(_resource_filename('nirspec_sensitivity_R%d.dat' % \
+                                                 resolution))
+    return nirspec_data
 
 
 def _resource_filename(filename):
