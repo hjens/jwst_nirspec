@@ -3,6 +3,8 @@ import numpy as np
 import sys
 sys.path.append('../..')
 import jwst_nirspec as jn
+import c2raytools as c2t
+
 
 def test_nirspec_sensitivity():
     wavel_R100 = np.linspace(0.7, 5, 100) # Wavelength in mu
@@ -18,5 +20,21 @@ def test_nirspec_sensitivity():
     pl.show()
 
 
+def test_flux_to_njy():
+    # According to http://tomdwelly.com/tools_lumtoflux.php
+    # 1e40 erg/s/A at 1000 A, z=8 is 0.3995 nJy
+    z = 8.
+    wavel_obsframe = 1000.
+    wavel_restframe = 1000./(1.+z)
+    flux_obsframe = 1.e40
+    flux_restframe = flux_obsframe*(1.+z)
+    wavel_obs, flux_nJy = jn.flux_to_njy(wavel=wavel_restframe,
+                                         flux=flux_restframe, z=z)
+    print 'flux:', flux_nJy, ' nJy'
+    print 'should be around 0.3995'
+    print 'Luminosity distance:', c2t.luminosity_distance(z)
+
+
 if __name__ == '__main__':
-    test_nirspec_sensitivity()
+    #test_nirspec_sensitivity()
+    test_flux_to_njy()
