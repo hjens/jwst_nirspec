@@ -109,7 +109,34 @@ def nirspec_sensitivity(wavel_mu, resolution):
 
 
 def signal_to_noise(wavel, flux, t, z=7., resolution=100):
-    pass
+    """
+    Gives the signal-to-noise ratio for a spectrum at a given
+    exposure time
+
+    :param wavel: The restframe wavelength in A
+    :param flux: The flux in erg/s/A
+    :param t: the exposure time in seconds
+    :param z: The redshift
+    :param resolution: The NIRSpec resolution. Can
+    be 100 or 1000
+    :return: An array containing the S/N for each
+    wavelength
+    """
+    if resolution == 100:
+        sens_time = 1.e4
+    elif resolution == 1000:
+        sens_time = 1.e5
+    else:
+        raise ValueError('Invalid resolution: %d', resolution)
+    # The S/N is calculated by looking up the flux that gives
+    # S/N=10 for t=1e4 s and scaling this according to an empirical
+    # relation found by comparing to the NIRSpec ETC
+    wavel_obs, flux_nJy = flux_to_njy(wavel, flux, z)
+    wavel_obs_mu = wavel_obs*1e-4
+    nirspec_min_flux = nirspec_sensitivity(wavel_obs_mu, resolution)
+    coeff = 0.65
+    SN = 10.*flux_nJy/nirspec_min_flux*(t/sens_time)**coeff
+    return SN
 
 
 def _get_nirspec_data(resolution):

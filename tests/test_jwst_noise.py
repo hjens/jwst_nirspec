@@ -39,25 +39,43 @@ def test_flux_to_njy():
 def test_nirspec_bins():
     # Test that the resolution as a function of wavelength
     # is the same as in the data files
-    bins_R100 = jn.nirspec_bins(resolution=100)
-    dlambda = bins_R100[1:]-bins_R100[:-1]
-    bin_centers = bins_R100[1:] + dlambda/2.
-    R = bin_centers/dlambda
+    for resolution in [100, 1000]:
+        pl.figure()
+        bins = jn.nirspec_bins(resolution=resolution)
+        dlambda = bins[1:]-bins[:-1]
+        bin_centers = bins[1:] + dlambda/2.
+        R = bin_centers/dlambda
 
-    nirspec_data = jn.utility_functions._get_nirspec_data(resolution=100)
-    wavel_nirspec = nirspec_data[:, 0]
-    specres_nirspec = nirspec_data[:, 1]
+        nirspec_data = jn.utility_functions._get_nirspec_data(resolution=resolution)
+        wavel_nirspec = nirspec_data[:, 0]
+        specres_nirspec = nirspec_data[:, 1]
 
-    pl.plot(bin_centers, R, label='Calculated')
-    pl.plot(wavel_nirspec*1e4, specres_nirspec, label='From file')
-    pl.xlabel('Wavelength')
-    pl.ylabel('Calculated R')
-    pl.legend(loc='best')
-    pl.title('test nirspec_bins. Curves should be similar')
+        pl.plot(bin_centers, R, label='Calculated')
+        pl.plot(wavel_nirspec*1e4, specres_nirspec, label='From file')
+        pl.xlabel('Wavelength')
+        pl.ylabel('Calculated R')
+        pl.legend(loc='best')
+        pl.title('test nirspec_bins, R=%d. Curves should be similar' % resolution)
     pl.show()
 
 
+def test_signal_to_noise():
+    # Find flux that gives the same flux density at some wavelength
+    # Make sure S/N is approx 10
+    # 100 nJy at 2 um, t=1e4
+    # 3.6e40 erg/s/A
+    z = 7
+    t = 1e4
+    wavel_restframe = 2.*1.e4/(1+z)
+    flux = 3.6e40
+    SN = jn.signal_to_noise(wavel_restframe, flux, t, z)
+    print 'Flux :', jn.flux_to_njy(wavel_restframe, flux, z)[1], ' nJy'
+    print 'Signal to noise:', SN
+    print 'Should be on the order of 10'
+
+
 if __name__ == '__main__':
-    test_nirspec_sensitivity()
-    test_flux_to_njy()
-    test_nirspec_bins()
+    #test_nirspec_sensitivity()
+    #test_flux_to_njy()
+    #test_nirspec_bins()
+    test_signal_to_noise()
