@@ -69,15 +69,16 @@ def test_signal_to_noise():
     wavel_restframe = 2.*1.e4/(1+z)
     flux = 3.6e40
     SN = jn.signal_to_noise(wavel_restframe, flux, t, z)
+    print 'test signal_to_noise'
     print 'Flux :', jn.flux_to_njy(wavel_restframe, flux, z)[1], ' nJy'
     print 'Signal to noise:', SN
     print 'Should be on the order of 10'
 
 
 def test_rebin_spectrum():
-    # Generate a random signal to use as a spectrum
-    wavel = np.linspace(1200., 6000., 2000)
-    flux = np.sin(wavel/100.)*2. + np.random.normal(size=len(wavel))
+    sample_spectrum = np.loadtxt('sample_spectrum.dat', skiprows=1)
+    wavel = sample_spectrum[:,0]
+    flux = sample_spectrum[:,1]
     # Rebin
     wavel_R100, flux_R100 = jn.rebin_spectrum(wavel, flux, z=7,
                                               resolution=100)
@@ -92,9 +93,25 @@ def test_rebin_spectrum():
     pl.legend(loc='best')
     pl.show()
 
+
+def test_noise_realization_fixed_t():
+    # Generate a sine wave signal to use as a spectrum
+    sample_spectrum = np.loadtxt('sample_spectrum.dat', skiprows=1)
+    wavel = sample_spectrum[:,0]
+    flux = sample_spectrum[:,1]
+    t = 5.*3600. # 5 hours
+    wavel, flux = jn.rebin_spectrum(wavel, flux, z=7, resolution=100)
+    noise = jn.get_noise_realization_fixed_t(wavel, flux, t)
+    pl.plot(wavel, flux, label='noise free')
+    pl.plot(wavel, flux+noise, label='noisy')
+    pl.legend(loc='best')
+    pl.show()
+
+
 if __name__ == '__main__':
-    #test_nirspec_sensitivity()
-    #test_flux_to_njy()
-    #test_nirspec_bins()
-    #test_signal_to_noise()
+    test_nirspec_sensitivity()
+    test_flux_to_njy()
+    test_nirspec_bins()
+    test_signal_to_noise()
     test_rebin_spectrum()
+    test_noise_realization_fixed_t()

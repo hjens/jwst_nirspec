@@ -43,4 +43,21 @@ def get_noise_realization_fixed_sn(wavel, flux, S_N_target, z=7.,
 
 def get_noise_realization_fixed_t(wavel, flux, t, z=7.,
                                   resolution=100):
-    pass
+    """
+    Generate a realization of Gaussian noise
+    for a given spectrum and integration time
+
+    :param wavel: The restframe wavelength in A
+    :param flux: The flux in erg/s/A
+    :param t: The integration time in seconds
+    :param z: The redshift
+    :param resolution: The NIRSpec resolution. Can
+    be 100 or 1000
+    :return: Array with the noise to be added to
+    the spectrum
+    """
+    S_N = uf.signal_to_noise(wavel, flux, t, z, resolution)
+    noise_sigma = flux/S_N
+    noise = np.random.normal(loc=0.0, scale=noise_sigma,
+                             size=wavel.shape)
+    return noise
