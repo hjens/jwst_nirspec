@@ -74,8 +74,27 @@ def test_signal_to_noise():
     print 'Should be on the order of 10'
 
 
+def test_rebin_spectrum():
+    # Generate a random signal to use as a spectrum
+    wavel = np.linspace(1200., 6000., 2000)
+    flux = np.sin(wavel/100.)*2. + np.random.normal(size=len(wavel))
+    # Rebin
+    wavel_R100, flux_R100 = jn.rebin_spectrum(wavel, flux, z=7,
+                                              resolution=100)
+    wavel_R1000, flux_R1000 = jn.rebin_spectrum(wavel, flux, z=7,
+                                                resolution=1000)
+    pl.plot(wavel, flux, label='Raw spectrum')
+    pl.plot(wavel_R1000, flux_R1000, label='R=1000')
+    pl.plot(wavel_R100, flux_R100, label='R=100', linewidth=2.)
+    pl.xlabel('Wavel (A)')
+    pl.ylabel('Flux')
+    pl.title('test rebin_spectrum')
+    pl.legend(loc='best')
+    pl.show()
+
 if __name__ == '__main__':
-    test_nirspec_sensitivity()
-    test_flux_to_njy()
-    test_nirspec_bins()
-    test_signal_to_noise()
+    #test_nirspec_sensitivity()
+    #test_flux_to_njy()
+    #test_nirspec_bins()
+    #test_signal_to_noise()
+    test_rebin_spectrum()
