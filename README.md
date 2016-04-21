@@ -5,7 +5,7 @@ rebin spectra to NIRSpec's resolution and simulation observational noise.
 
 # Installation
 Download the package and put it in your Python path. Make sure
-you can install it:
+you can import it:
 
     import jwst_nirspec
 
