@@ -75,7 +75,7 @@ def test_signal_to_noise():
 
 
 if __name__ == '__main__':
-    #test_nirspec_sensitivity()
-    #test_flux_to_njy()
-    #test_nirspec_bins()
+    test_nirspec_sensitivity()
+    test_flux_to_njy()
+    test_nirspec_bins()
     test_signal_to_noise()
