@@ -101,10 +101,28 @@ def test_noise_realization_fixed_t():
     flux = sample_spectrum[:,1]
     t = 5.*3600. # 5 hours
     wavel, flux = jn.rebin_spectrum(wavel, flux, z=7, resolution=100)
-    noise = jn.get_noise_realization_fixed_t(wavel, flux, t)
+    noise = jn.noise_realization_fixed_t(wavel, flux, t)
     pl.plot(wavel, flux, label='noise free')
     pl.plot(wavel, flux+noise, label='noisy')
     pl.legend(loc='best')
+    pl.title('Test fixed exposure time')
+    pl.show()
+
+
+def test_noise_realization_fixed_sn():
+    # Generate a sine wave signal to use as a spectrum
+    sample_spectrum = np.loadtxt('sample_spectrum.dat', skiprows=1)
+    wavel = sample_spectrum[:,0]
+    flux = sample_spectrum[:,1]
+    sn = 5
+    wavel, flux = jn.rebin_spectrum(wavel, flux, z=7, resolution=100)
+    noise = jn.noise_realization_fixed_sn(wavel, flux,
+                                          signal_to_noise=sn, z=7,
+                                          resolution=100)
+    pl.plot(wavel, flux, label='noise free')
+    pl.plot(wavel, flux+noise, label='noisy')
+    pl.legend(loc='best')
+    pl.title('Test fixed S/N=%d' % sn)
     pl.show()
 
 
@@ -115,3 +133,4 @@ if __name__ == '__main__':
     test_signal_to_noise()
     test_rebin_spectrum()
     test_noise_realization_fixed_t()
+    test_noise_realization_fixed_sn()

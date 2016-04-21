@@ -36,27 +36,48 @@ def rebin_spectrum(wavel, flux, z, resolution=100):
     return wavel_out, flux_out
 
 
-def get_noise_realization_fixed_sn(wavel, flux, S_N_target, z=7.,
-                                   resolution=100.):
-    pass
+def noise_realization_fixed_sn(wavel, flux, signal_to_noise,
+                               z=7., resolution=100.):
+    """
+    Generate a noise realization for a given S/N ratio,
+    rather than a given exposure time. The S/N is
+    measured at 1500 A
+
+    :param wavel: The restframe wavelength in A
+    :param flux: The flux in erg/s/A
+    :param signal_to_noise: The output S/N at 1500 A
+    :param z: The redshift
+    :param resolution: The NIRSpec resolution
+    :return: Array with the noise to be added to
+    the spectrum
+    """
+    s_n_spectrum = uf.signal_to_noise(wavel, flux, 3600., z,
+                             resolution)
+    idx_1500 = np.argmin(np.abs(wavel-1500.))
+    s_n_spectrum *= signal_to_noise / s_n_spectrum[idx_1500]
+    noise_sigma = flux/s_n_spectrum
+    noise = np.random.normal(loc=0.0, scale=noise_sigma,
+                             size=wavel.shape)
+    return noise
 
 
-def get_noise_realization_fixed_t(wavel, flux, t, z=7.,
-                                  resolution=100):
+def noise_realization_fixed_t(wavel, flux, exp_time_seconds, z=7.,
+                              resolution=100):
     """
     Generate a realization of Gaussian noise
     for a given spectrum and integration time
 
     :param wavel: The restframe wavelength in A
     :param flux: The flux in erg/s/A
-    :param t: The integration time in seconds
+    :param exp_time_seconds: The exposure time in seconds
     :param z: The redshift
     :param resolution: The NIRSpec resolution. Can
     be 100 or 1000
     :return: Array with the noise to be added to
     the spectrum
     """
-    S_N = uf.signal_to_noise(wavel, flux, t, z, resolution)
+    S_N = uf.signal_to_noise(wavel, flux, exp_time_seconds, z,
+                             resolution)
     noise_sigma = flux/S_N
     noise = np.random.normal(loc=0.0, scale=noise_sigma,
                              size=wavel.shape)
